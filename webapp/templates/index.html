@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <title>Internet Radio Reciever</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+<div>You are listening to <span class="radio_name">{{ metadata['radio_name'] }}</span>
+    at {{ metadata['radio_address'] }}. <br/>
+    Now playing <span class="name">{{ metadata['title'] }}</span> by
+    <span class="name">{{ metadata['artist'] }}</span>{% if metadata['year'] %} released in
+        {{ metadata['year'] }}{% endif %}.<br/>
+    <img src="{{ album_cover }}"/>
+</div>
+<!--Control panel-->
+<div>
+
+</div>
+</body>
+</html>
