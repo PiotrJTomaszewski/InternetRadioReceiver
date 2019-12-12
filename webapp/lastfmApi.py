@@ -1,6 +1,16 @@
 import urllib.request
 from io import BytesIO
 import json
+import pprint as pprint
+import string
+
+
+class AlbumNotFoundError(Exception):
+    pass
+
+
+class CoverNotFoundError(Exception):
+    pass
 
 
 class LastfmApi:
@@ -18,8 +28,11 @@ class LastfmApi:
         # TODO: What if no song is being played
         # TODO: What if song is missing parameters
         if album is None:
-            album = self.find_album_name(artist, song_title)
-        album = self._encode(album)
+            try:
+                album = self.find_album_name(artist, song_title)
+                album = self._encode(album)
+            except AlbumNotFoundError:
+                raise CoverNotFoundError
         artist = self._encode(artist)
         response = urllib.request.urlopen(
             'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key={}&artist={}&album={}&autocorrect=1&format=json'.format(
@@ -28,8 +41,12 @@ class LastfmApi:
         try:
             cover_url = decoded_response['album']['image'][-1]['#text']
         except KeyError:
-            print('Error')
-            cover_url = ''
+            message = decoded_response.get('message')
+            if message is not None:
+                print('Error: ' + message)
+            else:
+                print('Error while finding album')
+            raise CoverNotFoundError
         return cover_url
 
     def find_album_name(self, artist, song_title):
@@ -43,14 +60,24 @@ class LastfmApi:
         try:
             album = decoded_response['track']['album']['title']
         except KeyError:
-            print('Error')
-            album = ''
+            message = decoded_response.get('message')
+            if message is not None:
+                print('Error: ' + message)
+            else:
+                print('Error while finding album')
+            raise AlbumNotFoundError
         return album
 
     def _encode(self, input_string):
         # TODO: Do it in one pass
-        encoded_string = input_string.replace(' ', '%20')
+        encoded_string = input_string
+        encoded_string = encoded_string.replace(' ', '+')
         encoded_string = encoded_string.replace('&', '%26')
+        slash_pos = encoded_string.find('/')
+        if slash_pos != -1:
+            encoded_string = encoded_string[:slash_pos]
+        # encoded_string = ascii(encoded_string)  # Figure out how to do this properly
+        # TODO: Characters not working: '
         return encoded_string
 
 

@@ -4,3 +4,7 @@ span.radio_name {
 span.name {
     color: #ff1331;
 }
+
+table, th, td {
+  border: 1px solid black;
+}

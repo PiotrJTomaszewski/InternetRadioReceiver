@@ -12,9 +12,48 @@
         {{ metadata['year'] }}{% endif %}.<br/>
     <img src="{{ album_cover }}"/>
 </div>
+<div>
+    {{ mpd_status['state'] }} {{ mpd_status['volume'] }}
+</div>
 <!--Control panel-->
 <div>
-
+    <form>
+        <button formaction="/pause">Pause</button>
+        <button formaction="/play">Play</button>
+        <button formaction="/prev">Previous station</button>
+        <button formaction="/next">Next station</button>
+    </form>
 </div>
+
+<div>
+    Your stations
+    <table>
+        <!--TODO: Add new station button-->
+        {% for station in stations %}
+            <tr>
+                <td>
+                    {{ station['name'] }}
+                </td>
+                <td>
+                    {{ station['title'] }}
+                </td>
+                <td>
+                    {{ station['file'] }}
+                </td>
+                <td>
+                    <form action="/switchTo" method="get">
+                        <button type="submit" name="id" value="{{ station['id'] }}">Listen</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/delete" method="get">
+                        <button type="submit" name="id" value="{{ station['id'] }}">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
 </body>
 </html>
