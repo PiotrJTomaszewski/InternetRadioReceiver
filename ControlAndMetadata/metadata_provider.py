@@ -2,22 +2,14 @@ from mpd_connection import MPDConnection
 from processing_metadata import process_metadata, join_metadata
 from lastfm_api import LastFmMetadataGetter, LastFmApiException
 from multiprocessing.managers import SyncManager
-from threading import Event
-from multiprocessing import Queue
+from multiprocessing import Event
 
 # Shared objects
 shared_song_metadata = {}
 shared_mpd_status = {}
+control_panel_new_song_event = Event()
 
 DEBUG_MODE = True
-
-
-def get_shared_song_metadata():
-    return shared_song_metadata
-
-
-def get_shared_mpd_status():
-    return shared_mpd_status
 
 
 def initializer(self):
@@ -28,8 +20,9 @@ def initializer(self):
 class MetadataProvider:
     def __init__(self):
         # Set shared objects
-        SyncManager.register('SharedSongMetadata', callable=get_shared_song_metadata)
-        SyncManager.register('SharedMpdStatus', callable=get_shared_mpd_status)
+        SyncManager.register('SharedSongMetadata', callable=lambda: shared_song_metadata)
+        SyncManager.register('SharedMpdStatus', callable=lambda: shared_mpd_status)
+        SyncManager.register('ControlPanelNewSongEvent', callable=lambda: control_panel_new_song_event)
         self.manager = SyncManager(address=('', 50000), authkey=b'abc')
         self.manager.start()
         self.song_metadata = self.manager.SharedSongMetadata()
@@ -59,9 +52,9 @@ class MetadataProvider:
         )
         self.song_metadata.update(joined_metadata)
         # if DEBUG_MODE:
-            # import pprint
-            # pprint.pprint(joined_metadata)
-            # print(joined_metadata)
+        # import pprint
+        # pprint.pprint(joined_metadata)
+        # print(joined_metadata)
 
     def new_player_status_callback(self):
         player_status = self.mpd_connection.get_player_status()

@@ -2,6 +2,7 @@ from mpd import MPDClient, base
 import threading
 DEBUG_MODE = True
 
+
 class SeriousConnectionError(BaseException):
     def __init__(self, arg):
         self.strerror = arg
@@ -74,16 +75,16 @@ class MPDConnection:
     def get_current_song_metadata(self):
         return self.current_song_metadata
 
-    def get_volume(self):
-        return self.player_status.get('volume')
+    # def get_volume(self):
+    #     return self.player_status.get('volume')
 
-    @reconnect_on_failure(client='active')
-    def pause(self):
-        self.active_client.pause(1)
-
-    @reconnect_on_failure(client='active')
-    def play(self):
-        self.active_client.play(0)
+    # @reconnect_on_failure(client='active')
+    # def pause(self):
+    #     self.active_client.pause(1)
+    #
+    # @reconnect_on_failure(client='active')
+    # def play(self):
+    #     self.active_client.play(0)
 
     def player_state(self):
         return self.player_status.get('state')
