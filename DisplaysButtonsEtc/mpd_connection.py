@@ -33,12 +33,23 @@ class MPDConnection:
     def __del__(self):
         self.client.disconnect()
 
-    def connect(self, client):
-        client.connect(self.host, self.port)
+    def connect(self):
+        self.client.connect(self.host, self.port)
 
     @reconnect_on_failure
     def get_volume(self):
         return self.client.status().get('volume')
+
+    @reconnect_on_failure
+    def change_volume(self, vol_difference):
+        current_volume = self.get_volume()
+        new_volume = current_volume + vol_difference
+        # Volume should be between 0 and 100
+        if new_volume < 0:
+            new_volume = 0
+        elif new_volume > 100:
+            new_volume = 100
+        self.client.setvol(new_volume)
 
     @reconnect_on_failure
     def pause(self):
@@ -47,3 +58,11 @@ class MPDConnection:
     @reconnect_on_failure
     def play(self):
         self.client.play(0)
+
+    @reconnect_on_failure
+    def prev(self):
+        self.client.prev()
+
+    @reconnect_on_failure
+    def next(self):
+        self.client.previous()
