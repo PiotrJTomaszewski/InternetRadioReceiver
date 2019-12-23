@@ -5,15 +5,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-<div>You are listening to <span class="radio_name">{{ metadata['radio_name'] }}</span>
-    at {{ metadata['radio_address'] }}. <br/>
-    Now playing <span class="name">{{ metadata['title'] }}</span> by
-    <span class="name">{{ metadata['artist'] }}</span>{% if metadata['year'] %} released in
-        {{ metadata['year'] }}{% endif %}.<br/>
-    <img src="{{ album_cover }}"/>
+<div>You are listening to <span class="radio_name">{{ metadata.get('radio_name') }}</span>
+    at {{ metadata.get('radio_address') }}. <br/>
+    Now playing <span class="name">{{ metadata.get('track').get('name') }}</span> by
+    <span class="name">{{ metadata.get('artist') }}</span>
+    from album <span class="name">{{ metadata.get('album').get('name') }}</span>
+    {% if metadata.get('release_year') %} released in {{ metadata.get('release_year') }}{% endif %}<br/>
+    <img src="{{ metadata.get('album').get('cover_url') }}"/>
 </div>
 <div>
-    {{ mpd_status['state'] }} {{ mpd_status['volume'] }}
+    {#    {{ mpd_status.get('state') }} {{ mpd_status.get('volume') }}#}
 </div>
 <!--Control panel-->
 <div>
@@ -23,6 +24,47 @@
         <button formaction="/prev">Previous station</button>
         <button formaction="/next">Next station</button>
     </form>
+</div>
+
+<div>
+    Album tags:
+    {% if metadata.get('album').get('tags') %}
+        {% for tag in metadata.get('album').get('tags') %}
+            <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
+        {% endfor %}
+    {% endif %}
+
+    Track tags:
+    {% if metadata.get('track').get('tags') %}
+        {% for tag in metadata.get('track').get('tags') %}
+            <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div>
+    Wiki snippet about album:
+    {{ metadata.get('album').get('wiki')|safe }}
+    <br/>
+    Summary:
+    {{ metadata.get('album').get('wiki_summary')|safe }}
+    <br/>
+    Wiki snippet about track:
+    {{ metadata.get('track').get('wiki')|safe }}
+    <br/>
+    Summary:
+    {{ metadata.get('track').get('wiki_summary')|safe }}
+</div>
+
+<div>
+    Album tracklist
+    {% if metadata.get('album').get('tracklist') %}
+    <ul>
+        {% for track in metadata.get('album').get('tracklist') %}
+            <li>{{ track }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 </div>
 
 <div>
