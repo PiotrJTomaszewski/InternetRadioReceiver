@@ -33,8 +33,10 @@ def _process_metadata_shoutcast(song):
 
 def join_metadata(metadata_from_mpd, track_metadata, album_metadata):
     joined_metadata = {
-        'radio_address': metadata_from_mpd.get('radio_address'),
-        'radio_name': metadata_from_mpd.get('radio_name'),
+        'radio': {
+            'address': metadata_from_mpd.get('radio_address'),
+            'name': metadata_from_mpd.get('radio_name')
+        },
         'artist': track_metadata.get('artist') or album_metadata.get('artist') or metadata_from_mpd.get('artist'),
         'track': {
             'name': track_metadata.get('track') or metadata_from_mpd.get('track'),

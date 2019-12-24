@@ -5,8 +5,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-<div>You are listening to <span class="radio_name">{{ metadata.get('radio_name') }}</span>
-    at {{ metadata.get('radio_address') }}. <br/>
+<div>You are listening to <span class="radio_name">{{ metadata.get('radio').get('name') }}</span>
+    at {{ metadata.get('radio').get('address') }}. <br/>
     Now playing <span class="name">{{ metadata.get('track').get('name') }}</span> by
     <span class="name">{{ metadata.get('artist') }}</span>
     from album <span class="name">{{ metadata.get('album').get('name') }}</span>
