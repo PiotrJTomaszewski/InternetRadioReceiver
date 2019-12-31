@@ -66,19 +66,35 @@ def next_station():
     return redirect('/')
 
 
-@app.route('/switchTo', methods=['GET'])
-def switch_to_station():
-    id = request.args.get('id')
+@app.route('/volume_up')
+def volume_up():
+    print("Vol up")
+    return redirect('/')
+
+
+@app.route('volume_down')
+def volume_down():
+    print("Vol down")
+    return redirect('/')
+
+
+@app.route('/switchTo/<id>')
+def switch_to_station(id):
     print('Switch to ', id)
     # mpd_do_action(mpd_client.playid, id)
     return redirect('/')
 
 
-@app.route('/delete', methods=['GET'])
-def delete_station():
-    id = request.args.get('id')
+@app.route('/delete/<id>')
+def delete_station(id):
     print('Delete ', id)
     # mpd_do_action(mpd_client.deleteid, id)
+    return redirect('/')
+
+
+@app.route('/add_station/<address>')
+def add_station(address):
+    print(address)
     return redirect('/')
 
 

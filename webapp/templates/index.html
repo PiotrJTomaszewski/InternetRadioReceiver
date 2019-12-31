@@ -5,97 +5,145 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-<div>You are listening to <span class="radio_name">{{ metadata.get('radio').get('name') }}</span>
-    at {{ metadata.get('radio').get('address') }}. <br/>
-    Now playing <span class="name">{{ metadata.get('track').get('name') }}</span> by
-    <span class="name">{{ metadata.get('artist') }}</span>
-    from album <span class="name">{{ metadata.get('album').get('name') }}</span>
-    {% if metadata.get('release_year') %} released in {{ metadata.get('release_year') }}{% endif %}<br/>
-    <img src="{{ metadata.get('album').get('cover_url') }}"/>
-</div>
-<div>
-    {#    {{ mpd_status.get('state') }} {{ mpd_status.get('volume') }}#}
-</div>
-<!--Control panel-->
-<div>
-    <form>
-        <button formaction="/pause">Pause</button>
-        <button formaction="/play">Play</button>
-        <button formaction="/prev">Previous station</button>
-        <button formaction="/next">Next station</button>
-    </form>
-</div>
+<div id="content">
+    <div id="radio_info">
+        <span id="radio_name">{{ metadata.get('radio').get('name') }}</span><br/>
+        <span id="radio_address">{{ metadata.get('radio').get('address') }}</span>
+    </div>
+    <div id="cover_container">
+        <img src="{{ metadata.get('album').get('cover_url') }}" id="album_cover" alt="Album cover"/>
+        <span id="paused_text">
+        {% if metadata.get('state') == 'paused' %}
+            Paused
+        {% endif %}
+        </span>
+    </div>
+    <div id="track_info">
+        <span id="track_name">{{ metadata.get('track').get('name') }}</span><br/>
+        <span id="artist_name">{{ metadata.get('artist') }}</span><br/>
+        <span id="album_name">{{ metadata.get('album').get('name') }}</span><br/>
+        <span id="relase_year">
+                {% if metadata.get('release_year') %}
+                    Released in {{ metadata.get('release_year') }}
+                {% endif %}
+            </span>
+    </div>
+    <div id="control_panel">
+        <div id="play_control">
+            <form>
+                <button formaction="{{ url_for('pause') }}">Pause</button>
+                <button formaction="{{ url_for('play') }}">Play</button>
+                <button formaction="{{ url_for('prev_station') }}">Previous station</button>
+                <button formaction="{{ url_for('next_station') }}">Next station</button>
+            </form>
+        </div>
+        <div id="volume_control">
+            <form>
+                Current volume: {{ mpd_status.get('volume') }}%<br/>
+                <button formaction="{{ url_for('volume_down') }}">Volume down</button>
+                <button formaction="{{ url_for('volume_up') }}">Volume up</button>
+            </form>
+        </div>
+    </div>
 
-<div>
-    Album tags:
-    {% if metadata.get('album').get('tags') %}
-        {% for tag in metadata.get('album').get('tags') %}
-            <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
-        {% endfor %}
-    {% endif %}
+    <div id="stations">
+        <div id="existing_stations_div">
+            <table id="stations_table">
+                <thead>Your stations</thead>
+                <!--TODO: Add new station button-->
+                {% for station in stations %}
+                    <tr class="station_row">
+                        <td class="station_element">
+                            {{ station['name'] }}
+                        </td>
+                        <td class="station_element">
+                            {{ station['title'] }}
+                        </td>
+                        <td class="station_element">
+                            {{ station['file'] }}
+                        </td>
+                        <td class="station_element">
+                            <form>
+                                <button type="submit" name="id"
+                                        formaction="{{ url_for('switch_to_station', station_id=station['id']) }}">
+                                    Listen
+                                </button>
+                            </form>
+                        </td>
+                        <td class="station_element">
+                            <form>
+                                <button type="submit" name="id"
+                                        formaction="{{ url_for('delete_station', station_id=station['id']) }}">Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id="new_station_div">
+            <form id="add_new_station_form" action="{{ url_for('add_station')}}">
+                <label for="new_station_address">Input the address of a new station</label><br/><input
+                    id="new_station_address" name="new_station_address"/><br/>
+                <button type="submit" name="add_new_station">Add new station</button>
+            </form>
+        </div>
+    </div>
 
-    Track tags:
-    {% if metadata.get('track').get('tags') %}
-        {% for tag in metadata.get('track').get('tags') %}
-            <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
-        {% endfor %}
-    {% endif %}
+    <div class="additional_info" id="additional_album_info">
+        {% if metadata.get('album').get('tags') or metadata.get('album').get('tracklist') or metadata.get('album').get('wiki') or metadata.get('album').get('wiki_summary') %}
+            <h2>Additional info about the album</h2>
+            {% if metadata.get('album').get('tags') %}
+                <div class="tags_div">
+                    <h4>Album tags:</h4>
+                    {% for tag in metadata.get('album').get('tags') %}
+                        <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if metadata.get('album').get('tracklist') %}
+                <div class="tracklits_div">
+                    <ul id="tracklist_list">
+                        <h4>Album tracklist</h4>
+                        {% for track in metadata.get('album').get('tracklist') %}
+                            <li>{{ track }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if metadata.get('album').get('wiki') %}
+                <h4>Wiki snippet about the album:</h4>
+                {{ metadata.get('album').get('wiki')|safe }}
+            {% endif %}
+            {% if metadata.get('album').get('wiki_summary') %}
+                <h4>Wiki snippet summary:</h4>
+                {{ metadata.get('album').get('wiki_summary')|safe }}
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="additional_info" id="additional_track_info">
+        {% if metadata.get('track').get('tags') or metadata.get('track').get('wiki') or metadata.get('track').get('wiki_summary') %}
+            <h2>Additional info about the track</h2>
+            {% if metadata.get('track').get('tags') %}
+                <div class="tags_div">
+                    <h4>Track tags:</h4>
+                    {% for tag in metadata.get('track').get('tags') %}
+                        <a href="{{ tag.get('url') }}">{{ tag.get('name') }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if metadata.get('album').get('wiki') %}
+                <h4>Wiki snippet about the track:</h4>
+                {{ metadata.get('track').get('wiki')|safe }}
+            {% endif %}
+            {% if metadata.get('track').get('wiki_summary') %}
+                <h4>Wiki snippet summary:</h4>
+                {{ metadata.get('track').get('wiki_summary')|safe }}
+            {% endif %}
+        {% endif %}
+    </div>
+
 </div>
-
-<div>
-    Wiki snippet about album:
-    {{ metadata.get('album').get('wiki')|safe }}
-    <br/>
-    Summary:
-    {{ metadata.get('album').get('wiki_summary')|safe }}
-    <br/>
-    Wiki snippet about track:
-    {{ metadata.get('track').get('wiki')|safe }}
-    <br/>
-    Summary:
-    {{ metadata.get('track').get('wiki_summary')|safe }}
-</div>
-
-<div>
-    Album tracklist
-    {% if metadata.get('album').get('tracklist') %}
-    <ul>
-        {% for track in metadata.get('album').get('tracklist') %}
-            <li>{{ track }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-</div>
-
-<div>
-    Your stations
-    <table>
-        <!--TODO: Add new station button-->
-        {% for station in stations %}
-            <tr>
-                <td>
-                    {{ station['name'] }}
-                </td>
-                <td>
-                    {{ station['title'] }}
-                </td>
-                <td>
-                    {{ station['file'] }}
-                </td>
-                <td>
-                    <form action="/switchTo" method="get">
-                        <button type="submit" name="id" value="{{ station['id'] }}">Listen</button>
-                    </form>
-                </td>
-                <td>
-                    <form action="/delete" method="get">
-                        <button type="submit" name="id" value="{{ station['id'] }}">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        {% endfor %}
-    </table>
-</div>
-
 </body>
 </html>

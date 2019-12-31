@@ -1,10 +1,124 @@
-span.radio_name {
-    color: #125122;
-}
-span.name {
-    color: #ff1331;
+body {
+    background-color: #2a2c2e;
+    color: #dcd9d4;
+    font-size: 100%;
+    font-family: "Verdana", sans-serif;
 }
 
-table, th, td {
-  border: 1px solid black;
+a {
+    color: #dcd9d4;
+}
+
+button {
+    background-color: #1a1c1e;
+    border: none;
+    font-size: 1.3em;
+    color: #ffffff;
+    padding: 10px 20px;
+    margin: 10px 5px;
+}
+
+#content {
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+#radio_info {
+    margin: auto;
+    width: 70%;
+    text-align: center;
+}
+
+#radio_name {
+    font-size: 3em;
+    letter-spacing: 2px;
+}
+
+#radio_address {
+    font-size: 0.7em;
+}
+
+#cover_container {
+    padding: 20px;
+    position: relative;
+}
+
+#album_cover {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    max-width: 500px;
+    border-radius: 8px;
+    border-style: groove;
+}
+
+#paused_text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 500%; /* TODO: Change that */
+    color: #000000;
+    text-shadow: 3px 2px #ffffff;
+    letter-spacing: 3px;
+}
+
+#track_info {
+    font-size: 1.5em;
+    margin: auto;
+    width: 70%;
+    text-align: center;
+}
+
+#track_name {
+    font-size: 2em;
+    letter-spacing: 2px;
+}
+
+#tracklist_list {
+    list-style: decimal-leading-zero inside;
+    padding: 0px;
+}
+
+#control_panel {
+    margin: auto;
+    width: 70%;
+    text-align: center;
+}
+
+#play_control {
+    padding-bottom: 20px;
+}
+
+#stations {
+    /*overflow: hidden;*/
+    /*width: 70%;*/
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#new_station_div {
+    margin: auto;
+    /*width: 50%;*/
+    /*float: right;*/
+}
+
+#existing_stations_div {
+    margin: auto;
+    /*width: 50%;*/
+    /*float: left;*/
+}
+
+#stations_table {
+    border: 5px solid #000000;
+}
+
+.station_row {
+    border: 5px solid #000000;
+}
+
+.station_element {
+    border: 5px solid #000000;
+
 }
