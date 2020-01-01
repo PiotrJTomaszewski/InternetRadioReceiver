@@ -1,5 +1,6 @@
 from mpd import MPDClient, base
 import threading
+
 DEBUG_MODE = True
 
 
@@ -26,7 +27,9 @@ def reconnect_on_failure(client):
                     if DEBUG_MODE:
                         print('MPD_CLIENT: Connection to mpd lost. Reconnecting')
             raise SeriousConnectionError('Error: Maximum numbers of connection to MPD tries reached!')
+
         return try_and_reconnect
+
     return decorator
 
 
@@ -90,8 +93,8 @@ class MPDConnection:
         return self.player_status.get('state')
 
     @reconnect_on_failure(client='idling')
-    def idle(self, wait_for):
-        self.idling_client.idle(wait_for)
+    def idle(self):
+        return self.idling_client.idle()
 
     def _start_idling_client(self):
         self.connect_idling_client()
@@ -104,7 +107,15 @@ class MPDConnection:
         last_song_title = self.current_song_metadata.get('title')
         while True:
             # Wait for a change in player status
-            self.idle('player')
+            events = self.idle()
+            noteworthy_event = False
+            for event in events:
+                if event in ('player', 'mixer'):
+                    noteworthy_event = True
+                    break
+            if not noteworthy_event:
+                # If nothing important has happened
+                continue
             if DEBUG_MODE:
                 print('MPD_CLIENT: New player status')
             # Get status from player
@@ -122,11 +133,14 @@ class MPDConnection:
 if __name__ == '__main__':
     def a():
         pass
+
+
     # mpd_init('localhost', 6600)
     # mpd_connect(mpd_idling_client)
     mpd_connection = MPDConnection('localhost', 6600, a, a)
     # print(mpd_connection.get_playlist())
     import time
+
     time.sleep(1)
     print(mpd_connection.get_player_status())
     while 1:

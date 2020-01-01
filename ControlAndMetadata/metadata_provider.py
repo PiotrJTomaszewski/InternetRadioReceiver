@@ -8,6 +8,7 @@ from multiprocessing import Event
 shared_song_metadata = {}
 shared_mpd_status = {}
 control_panel_new_song_event = Event()
+webapp_new_status_event = Event()
 
 DEBUG_MODE = True
 
@@ -23,10 +24,12 @@ class MetadataProvider:
         SyncManager.register('SharedSongMetadata', callable=lambda: shared_song_metadata)
         SyncManager.register('SharedMpdStatus', callable=lambda: shared_mpd_status)
         SyncManager.register('ControlPanelNewSongEvent', callable=lambda: control_panel_new_song_event)
+        SyncManager.register('WebappNewStatusEvent', callable=lambda: webapp_new_status_event)
         self.manager = SyncManager(address=('', 50000), authkey=b'abc')
         self.manager.start()
         self.song_metadata = self.manager.SharedSongMetadata()
         self.mpd_status = self.manager.SharedMpdStatus()
+        self.webapp_new_status_event = self.manager.WebappNewStatusEvent()
 
         self.lastfm = LastFmMetadataGetter()
         self.mpd_connection = MPDConnection(host='localhost', port=6600,
@@ -59,6 +62,7 @@ class MetadataProvider:
     def new_player_status_callback(self):
         player_status = self.mpd_connection.get_player_status()
         self.mpd_status.update(player_status)
+        webapp_new_status_event.set()
 
 
 if __name__ == '__main__':

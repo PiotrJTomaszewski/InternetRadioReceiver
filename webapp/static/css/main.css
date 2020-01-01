@@ -92,17 +92,22 @@ button {
 }
 
 #stations {
-    display: flex;
-    flex-wrap: wrap;
+    /*display: flex;*/
+    /*flex-wrap: wrap;*/
 }
 
-#new_station_div {
-    margin: auto;
-}
+/*#new_station_div {*/
+    /*margin: auto;*/
+/*}*/
 
-#existing_stations_div {
-    margin: auto;
-}
+/*#new_station_address {*/
+    /*background-color: #1c1e1f;*/
+    /*color: #dcd9d4;*/
+/*}*/
+
+/*#existing_stations_div {*/
+    /*margin: auto;*/
+/*}*/
 
 .stations_table_border {
     border: 2px solid #ffffff54;

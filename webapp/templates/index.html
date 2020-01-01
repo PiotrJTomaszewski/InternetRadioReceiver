@@ -3,6 +3,39 @@
 <head>
     <title>Internet Radio Reciever</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script lang="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('has_status_changed_reply', function (status) {
+            if (status === true) {
+                location.reload();
+            }
+        });
+        setInterval(function () {
+            socket.emit('has_status_changed_request');
+        }, 3000);
+
+        function addStation() {
+            let address = prompt("Enter station address: ");
+            console.log(address);
+            console.log("Adding station " + address);
+            socket.emit('add_station', address);
+        }
+
+        function getDeleteConfirmation(station_id) {
+            var retVal = confirm("Do you really want to delete this radio station?");
+            if (retVal) {
+                console.log("Deleting station" + station_id);
+                socket.emit('delete_station', station_id);
+                return true;
+            }
+        }
+
+        function switchTo(station_id) {
+            console.log("Switching to " + station_id);
+            socket.emit('switch_to', station_id);
+        }
+    </script>
 </head>
 <body>
 <div id="content">
@@ -11,9 +44,10 @@
         <span id="radio_address">{{ metadata.get('radio').get('address') }}</span>
     </div>
     <div id="cover_container">
-        <img src="{{ metadata.get('album').get('cover_url') }}" id="album_cover" alt="Album cover"/>
+        <img src="{% if metadata.get('album').get('cover_url') %}{{ metadata.get('album').get('cover_url') }}
+        {% else %}{{ url_for('static', filename='img/no_cover.png') }}{% endif %}" id="album_cover" alt="Album cover"/>
         <span id="paused_text">
-        {% if metadata.get('state') == 'pause' %}
+        {% if mpd_status.get('state') == 'pause' %}
             Paused
         {% endif %}
         </span>
@@ -30,60 +64,42 @@
     </div>
     <div id="control_panel">
         <div id="play_control">
-            <form>
-                <button formaction="{{ url_for('pause') }}">Pause</button>
-                <button formaction="{{ url_for('play') }}">Play</button>
-                <button formaction="{{ url_for('prev_station') }}">Previous station</button>
-                <button formaction="{{ url_for('next_station') }}">Next station</button>
-            </form>
+            <button onclick="socket.emit('pause') ">Pause</button>
+            <button onclick="socket.emit('play');">Play</button>
+            <button onclick="socket.emit('prev_station');">Previous station</button>
+            <button onclick="socket.emit('next_station');">Next station</button>
         </div>
         <div id="volume_control">
-            <form>
-                Current volume: {{ mpd_status.get('volume') }}%<br/>
-                <button formaction="{{ url_for('volume_down') }}">Volume down</button>
-                <button formaction="{{ url_for('volume_up') }}">Volume up</button>
-            </form>
+            Current volume: {{ mpd_status.get('volume') }}%<br/>
+            <button onclick="socket.emit('volume_down');">Volume down</button>
+            <button onclick="socket.emit('volume_up');">Volume up</button>
         </div>
     </div>
 
     <div id="stations">
-        <div id="existing_stations_div">
-            <table id="stations_table" class="stations_table_border">
-                <thead>Your stations</thead>
-                <!--TODO: Add new station button-->
-                {% for station in stations %}
-                    <tr class="station_row stations_table_border">
-                        <td class="station_element stations_table_border">
-                            {{ station['name'] }}
-                        </td>
-                        <td class="station_element stations_table_border">
-                            {{ station['title'] }}
-                        </td>
-{#                        <td class="station_element stations_table_border">#}
-{#                            {{ station['file'] }}#}
-{#                        </td>#}
-                        <td class="stations_table_border">
-                            <form>
-                                <button type="submit" name="id"
-                                        formaction="{{ url_for('switch_to_station', station_id=station['id']) }}">
-                                    Listen
-                                </button>
-                                <button type="submit" name="id"
-                                        formaction="{{ url_for('delete_station', station_id=station['id']) }}">Delete
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-        <div id="new_station_div">
-            <form id="add_new_station_form" action="{{ url_for('add_station')}}">
-                <label for="new_station_address">Input the address of a new station</label><br/><input
-                    id="new_station_address" name="new_station_address"/><br/>
-                <button type="submit" name="add_new_station">Add new station</button>
-            </form>
-        </div>
+        <button type="submit" name="add_new_station" onclick="addStation()">Add new station</button><br/>
+        <table id="stations_table" class="stations_table_border">
+            <thead>Your stations</thead>
+            {% for station in stations %}
+                <tr class="station_row stations_table_border">
+                    <td class="station_element stations_table_border">
+                        {{ station['name'] }}
+                    </td>
+                    <td class="station_element stations_table_border">
+                        {{ station['file'] }}
+                    </td>
+                    <td class="stations_table_border">
+                        <button type="submit" name="id" onclick="switchTo({{ station['id'] }});">
+                            Listen
+                        </button>
+                        <button type="submit" name="id"
+                                onclick="getDeleteConfirmation({{ station['id'] }});">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
     </div>
 
     <div class="additional_info" id="additional_album_info">

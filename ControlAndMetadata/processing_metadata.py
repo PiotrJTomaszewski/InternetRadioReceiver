@@ -37,15 +37,16 @@ def join_metadata(metadata_from_mpd, track_metadata, album_metadata):
             'address': metadata_from_mpd.get('radio_address'),
             'name': metadata_from_mpd.get('radio_name')
         },
-        'artist': track_metadata.get('artist') or album_metadata.get('artist') or metadata_from_mpd.get('artist'),
+        'artist': track_metadata.get('artist') or album_metadata.get('artist')
+                  or metadata_from_mpd.get('artist') or 'Unknown',
         'track': {
-            'name': track_metadata.get('track') or metadata_from_mpd.get('track'),
+            'name': track_metadata.get('track') or metadata_from_mpd.get('track') or 'Unknown',
             'tags': track_metadata.get('tags'),
             'wiki': track_metadata.get('wiki'),
             'wiki_summary': track_metadata.get('wiki_summary')
         },
         'album': {
-            'name': album_metadata.get('album') or track_metadata.get('album'),
+            'name': album_metadata.get('album') or track_metadata.get('album') or 'Unknown',
             'cover_url': album_metadata.get('cover_url'),
             'tags': album_metadata.get('tags'),
             'wiki': album_metadata.get('wiki'),
