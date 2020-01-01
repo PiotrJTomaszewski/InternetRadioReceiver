@@ -3,7 +3,7 @@ from flask_socketio import SocketIO, emit
 from multiprocessing.managers import SyncManager
 from mpd_control_client import MPDControlClient
 
-FLASK_DEBUG = 1
+FLASK_DEBUG = 0
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Very Secret Key! Please don\'t look!'
@@ -12,6 +12,7 @@ socketio = SocketIO(app)
 manager = SyncManager(address=('', 50000), authkey=b'abc')
 shared_song_metadata = {}
 shared_mpd_status = {}
+shared_playlist = {}
 new_status_event = None
 
 mpd_client = MPDControlClient('localhost', 6600)
@@ -29,20 +30,21 @@ def has_status_changed():
 @app.before_first_request
 def init():
     # Setup shared metadata access
-    global shared_song_metadata, shared_mpd_status, new_status_event
+    global shared_song_metadata, shared_mpd_status, new_status_event, shared_playlist
     SyncManager.register('SharedSongMetadata')
     SyncManager.register('SharedMpdStatus')
+    SyncManager.register('SharedPlaylist')
     SyncManager.register('WebappNewStatusEvent')
     manager.connect()
     shared_song_metadata = manager.SharedSongMetadata()
     shared_mpd_status = manager.SharedMpdStatus()
+    shared_playlist = manager.SharedPlaylist()
     new_status_event = manager.WebappNewStatusEvent()
 
 
 @app.route('/')
 def main():
-    stations = mpd_client.get_stations()
-    return render_template('index.html', metadata=shared_song_metadata, stations=stations, mpd_status=shared_mpd_status)
+    return render_template('index.html', metadata=shared_song_metadata, stations=shared_playlist, mpd_status=shared_mpd_status)
 
 
 @socketio.on('pause')
@@ -89,18 +91,19 @@ def switch_to_station(station_id):
 
 @socketio.on('delete_station')
 def delete_station(station_id):
-    mpd_client.delete_station(station_id)  # TODO: Move that?
-    mpd_client.save_stations()
+    mpd_client.delete_station(station_id)
+    # mpd_client.save_stations()# TODO: Move that?
 
 
 @socketio.on('add_station')
 def add_station(address):
-    mpd_client.add_station(address)  # TODO: Move that?
-    mpd_client.save_stations()
+    mpd_client.add_station(address)
+    # mpd_client.save_stations()# TODO: Move that?
 
 
 # TODO: Save playlist
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", use_reloader=True)
+    # socketio.run(app, host="0.0.0.0", use_reloader=True)
+    socketio.run(app, host="0.0.0.0")

@@ -1,14 +1,12 @@
 import serial
 import select
-from mpd_connection import MPDConnection
+import threading
 
 mpd_connection = None
 
 
 class ButtonReader:
-    def __init__(self):
-        self.mpd_connection = MPDConnection('localhost', 6600)
-        self.mpd_connection.connect()
+    def __init__(self, callbacks):
         self.serial = serial.Serial(
             port='/dev/ttyS0',
             baudrate=1200,
@@ -17,8 +15,17 @@ class ButtonReader:
             bytesize=serial.EIGHTBITS,
             timeout=1
         )
+        # Assign callbacks
+        self.button1_callback = callbacks['button1']
+        self.button2_callback = callbacks['button2']
+        self.button3_callback = callbacks['button3']
+        self.button4_callback = callbacks['button4']
+        self.encoder_left_callback = callbacks['encoder_left']
+        self.encoder_right_callback = callbacks['encoder_right']
+        self.encoder_button_callback = callbacks['encoder_button']
+        self.reading_thread = threading.Thread(target=self.reading_thread_function)
 
-    def reading_thread(self):
+    def reading_thread_function(self):
         serial_fd = self.serial.fileno()
         poller_object = select.poll()
         poller_object.register(serial_fd, select.POLLIN)
@@ -34,23 +41,5 @@ class ButtonReader:
                         callbacks[i]()
                         received_value -= current_bit
 
-    def button1_callback(self):
-        print('button1')
-
-    def button2_callback(self):
-        print('button2')
-
-    def button3_callback(self):
-        print('button3')
-
-    def button4_callback(self):
-        print('button4')
-
-    def encoder_right_callback(self):
-        print('enc_right')
-
-    def encoder_left_callback(self):
-        print('enc_left')
-
-    def encoder_button_callback(self):
-        print('enc_button')
+    def start_reading_thread(self):
+        self.reading_thread.start()

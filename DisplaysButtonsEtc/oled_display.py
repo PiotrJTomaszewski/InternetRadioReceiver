@@ -3,7 +3,6 @@ from board import SCL, SDA
 import adafruit_ssd1306
 from PIL import Image, ImageDraw, ImageFont
 import time
-import math
 import threading
 
 
@@ -32,8 +31,10 @@ class OledDisplay:
         self.new_metadata_event = new_metadata_event
         self.metadata_source = metadata_source
         # Start display thread
-        display_thread = threading.Thread(target=self._display_metadata_thread)
-        display_thread.start()
+        self.display_thread = threading.Thread(target=self._display_metadata_thread)
+
+    def start_display_thread(self):
+        self.display_thread.start()
 
     def _prepare_text(self):
         metadata, player_status = self.metadata_source()

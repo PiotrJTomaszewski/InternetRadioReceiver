@@ -34,17 +34,20 @@ def reconnect_on_failure(client):
 
 
 class MPDConnection:
-    def __init__(self, host, port, new_player_status_callback, new_song_callback):
+    def __init__(self, host, port, new_player_status_callback, new_song_callback, playlist_callback):
         self.host = host
         self.port = port
         self.active_client = MPDClient()
         self.idling_client = MPDClient()
         self.new_player_status_callback = new_player_status_callback
         self.new_song_callback = new_song_callback
+        self.playlist_callback = playlist_callback
         self.idling_thread = threading.Thread(target=self._start_idling_client, daemon=True)
         self.idling_thread.start()
         self.player_status = {}
         self.current_song_metadata = {}
+        self.last_song_title = ""
+        self.current_playlist = {}
 
     def __del__(self):
         # TODO: Kill idling thread
@@ -60,13 +63,16 @@ class MPDConnection:
     def connect_idling_client(self):
         self.idling_client.connect(self.host, self.port)
 
-    @reconnect_on_failure(client='active')
     def get_playlist(self):
-        return self.active_client.playlistid()
+        return self.current_playlist
 
     @reconnect_on_failure(client='active')
     def update_player_status(self):
         self.player_status = self.active_client.status()
+
+    @reconnect_on_failure(client='active')
+    def update_playlist(self):
+        self.current_playlist = self.active_client.playlistid()
 
     def get_player_status(self):
         return self.player_status
@@ -78,23 +84,33 @@ class MPDConnection:
     def get_current_song_metadata(self):
         return self.current_song_metadata
 
-    # def get_volume(self):
-    #     return self.player_status.get('volume')
-
-    # @reconnect_on_failure(client='active')
-    # def pause(self):
-    #     self.active_client.pause(1)
-    #
-    # @reconnect_on_failure(client='active')
-    # def play(self):
-    #     self.active_client.play(0)
-
     def player_state(self):
         return self.player_status.get('state')
 
     @reconnect_on_failure(client='idling')
     def idle(self):
         return self.idling_client.idle()
+
+    def _handle_player_event(self):
+        print('MPD_CLIENT: New player status')
+        self.update_player_status()
+        self.new_player_status_callback()
+        self.update_current_song_metadata()
+        # Check if there is a new song
+        if self.current_song_metadata.get('title') != self.last_song_title:
+            if DEBUG_MODE:
+                print('MPD_CLIENT: New song')
+            self.new_song_callback()
+        self.last_song_title = self.current_song_metadata.get('title')
+
+    def _handle_mixer_event(self):
+        print('MPD_CLIENT: New player status')
+        self.update_player_status()
+        self.new_player_status_callback()
+
+    def _handle_playlist_event(self):
+        self.update_playlist()
+        self.playlist_callback()
 
     def _start_idling_client(self):
         self.connect_idling_client()
@@ -104,30 +120,17 @@ class MPDConnection:
         self.update_current_song_metadata()
         self.new_player_status_callback()
         self.new_song_callback()
-        last_song_title = self.current_song_metadata.get('title')
+        self.last_song_title = self.current_song_metadata.get('title')
         while True:
-            # Wait for a change in player status
+            # Wait for a signal from server
             events = self.idle()
-            noteworthy_event = False
             for event in events:
-                if event in ('player', 'mixer'):
-                    noteworthy_event = True
-                    break
-            if not noteworthy_event:
-                # If nothing important has happened
-                continue
-            if DEBUG_MODE:
-                print('MPD_CLIENT: New player status')
-            # Get status from player
-            self.update_player_status()
-            self.update_current_song_metadata()
-            self.new_player_status_callback()
-            # Check if there is a new song
-            if self.current_song_metadata.get('title') != last_song_title:
-                if DEBUG_MODE:
-                    print('MPD_CLIENT: New song')
-                self.new_song_callback()
-            last_song_title = self.current_song_metadata.get('title')
+                if event == 'player':
+                    self._handle_player_event()
+                elif event == 'mixer':
+                    self._handle_mixer_event()
+                elif event == 'playlist':
+                    self._handle_playlist_event()
 
 
 if __name__ == '__main__':

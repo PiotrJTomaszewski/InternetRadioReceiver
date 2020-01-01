@@ -4,6 +4,9 @@ import urllib.request
 from io import BytesIO
 from PIL import Image
 from collections import OrderedDict
+import threading
+
+no_cover_image_path = 'img/no_cover.png'
 
 
 class ImageLookup(OrderedDict):
@@ -31,7 +34,7 @@ class ImageLookup(OrderedDict):
 
 class TftDisplay:
     # TODO: Add welcome image
-    def __init__(self, rst_pin, dc_pin, blk_pin):
+    def __init__(self, metadata_source, new_song_event, rst_pin=26, dc_pin=6, blk_pin=13):
         # Initialize TFT display
         # rst_pin, blk_pin, dc_pin - As GPIO number (int)
         spi = SPI.SpiDev(0, 0, max_speed_hz=40000000)
@@ -41,30 +44,57 @@ class TftDisplay:
         self.display.begin()
         self.display.clear()
         self.image_lookup = ImageLookup(20)
+        self.metadata_source = metadata_source
+        self.event = new_song_event
+        self.display_thread = threading.Thread(target=self.display_thread_function)
         print("TftDisplay: Display initialized")
 
-    def download_and_display_image(self, url):
-        image = self.image_lookup.get(url)
-        if image is not None:  # Image was found in the lookup table
-            print('TFTDisplay: Image was found in the lookup table')
-        else:
-            image = self.download_image(url)
-        # image = Image.Image.convert(image, Image.MODES.RGB)
-        self.display_image(image)
+    def start_display_thread(self):
+        self.display_thread.start()
 
-    def display_image(self, image):
+    def display_thread_function(self):
+        self.event.wait()
+        song_metadata = self.metadata_source()
+        if song_metadata.get('album').get('cover_url') is None:
+            self.open_and_display_image(no_cover_image_path)
+        else:
+            self.download_and_display_image(song_metadata.get('album').get('cover_url'))
+        self.event.clear()
+
+    def download_and_display_image(self, url):
+        image = self._download_image(url)
+        # image = Image.Image.convert(image, Image.MODES.RGB)
+        self._display_image(image)
+
+    def open_and_display_image(self, path):
+        image = self._open_image(path)
+        self._display_image(image)
+
+    def _open_image(self, path):
+        image = self.image_lookup.get(path)
+        if image is None:
+            image = Image.open(path)
+            image.thumbnail((240, 240), Image.ANTIALIAS)
+        self.image_lookup[path] = image
+        return image
+
+    def _display_image(self, image):
         # TODO: Blend pause symbol into image?
         self.display.display(image)
         print("TftDisplay: Image displayed")
 
-    def download_image(self, url):
-        fd = urllib.request.urlopen(url)
-        image_file = BytesIO(fd.read())
-        # Open the image
-        image = Image.open(image_file)
-        image.thumbnail((240, 240), Image.ANTIALIAS)
-        self.image_lookup[url] = image
-        print("TFTFisplay: Image downloaded")
+    def _download_image(self, url):
+        image = self.image_lookup.get(url)
+        if image is not None:  # Image was found in the lookup table
+            print('TFTDisplay: Image was found in the lookup table')
+        else:
+            fd = urllib.request.urlopen(url)
+            image_file = BytesIO(fd.read())
+            # Open the image
+            image = Image.open(image_file)
+            image.thumbnail((240, 240), Image.ANTIALIAS)
+            self.image_lookup[url] = image
+            print("TFTFisplay: Image downloaded")
         return image
 
 
