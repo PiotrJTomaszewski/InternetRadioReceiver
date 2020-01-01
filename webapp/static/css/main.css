@@ -92,33 +92,30 @@ button {
 }
 
 #stations {
-    /*overflow: hidden;*/
-    /*width: 70%;*/
     display: flex;
     flex-wrap: wrap;
 }
 
 #new_station_div {
     margin: auto;
-    /*width: 50%;*/
-    /*float: right;*/
 }
 
 #existing_stations_div {
     margin: auto;
-    /*width: 50%;*/
-    /*float: left;*/
+}
+
+.stations_table_border {
+    border: 2px solid #fff9f994;
+    border-collapse: collapse;
 }
 
 #stations_table {
-    border: 5px solid #000000;
+
 }
 
 .station_row {
-    border: 5px solid #000000;
 }
 
 .station_element {
-    border: 5px solid #000000;
-
+    padding: 10px 10px;
 }

@@ -48,30 +48,26 @@
 
     <div id="stations">
         <div id="existing_stations_div">
-            <table id="stations_table">
+            <table id="stations_table" class="stations_table_border">
                 <thead>Your stations</thead>
                 <!--TODO: Add new station button-->
                 {% for station in stations %}
-                    <tr class="station_row">
-                        <td class="station_element">
+                    <tr class="station_row stations_table_border">
+                        <td class="station_element stations_table_border">
                             {{ station['name'] }}
                         </td>
-                        <td class="station_element">
+                        <td class="station_element stations_table_border">
                             {{ station['title'] }}
                         </td>
-                        <td class="station_element">
-                            {{ station['file'] }}
-                        </td>
-                        <td class="station_element">
+{#                        <td class="station_element stations_table_border">#}
+{#                            {{ station['file'] }}#}
+{#                        </td>#}
+                        <td class="stations_table_border">
                             <form>
                                 <button type="submit" name="id"
                                         formaction="{{ url_for('switch_to_station', station_id=station['id']) }}">
                                     Listen
                                 </button>
-                            </form>
-                        </td>
-                        <td class="station_element">
-                            <form>
                                 <button type="submit" name="id"
                                         formaction="{{ url_for('delete_station', station_id=station['id']) }}">Delete
                                 </button>

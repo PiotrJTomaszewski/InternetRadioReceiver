@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, request
 from multiprocessing.managers import SyncManager
-from multiprocessing import Queue
-from mpd import MPDClient, base
+from mpd_control_client import MPDControlClient
 
 app = Flask(__name__)
 
@@ -9,92 +8,87 @@ manager = SyncManager(address=('', 50000), authkey=b'abc')
 shared_song_metadata = {}
 shared_mpd_status = {}
 
+mpd_client = MPDControlClient('localhost', 6600)
+
 
 @app.before_first_request
 def init():
+    # Setup shared metadata access
     global shared_song_metadata, shared_mpd_status
     SyncManager.register('SharedSongMetadata')
     SyncManager.register('SharedMpdStatus')
     manager.connect()
     shared_song_metadata = manager.SharedSongMetadata()
     shared_mpd_status = manager.SharedMpdStatus()
-
-
-# global mpd_client, lastfm
-# mpd_client = MPDClient()
-# mpd_client.connect('localhost', 6600)
-# print(mpd_client.mpd_version)
+    mpd_client.connect()
 
 
 @app.route('/')
 def main():
-    # mpd_status = mpd_do_action(mpd_client.status)
-    # metadata = get_metadata(mpd_client)
-    # playlist = mpd_get_playlist()
-
-    playlist = {}
-    #
-
+    playlist = mpd_client.get_playlist()
     return render_template('index.html', metadata=shared_song_metadata, stations=playlist, mpd_status=shared_mpd_status)
 
 
 @app.route('/pause')
 def pause():
     print('Pause')
-    # mpd_do_action(mpd_client.pause, 1)
+    mpd_client.pause()
     return redirect('/')
 
 
 @app.route('/play')
 def play():
     print('Play')
-    # mpd_do_action(mpd_client.pause, 0)
+    mpd_client.play()
     return redirect('/')
 
 
 @app.route('/prev')
 def prev_station():
     print('Prev')
-    # mpd_do_action(mpd_client.previous)
+    mpd_client.prev()
     return redirect('/')
 
 
 @app.route('/next')
 def next_station():
     print('Next')
-    # mpd_do_action(mpd_client.next)
+    mpd_client.next()
     return redirect('/')
 
 
 @app.route('/volume_up')
 def volume_up():
     print("Vol up")
+    mpd_client.increase_volume(5)
     return redirect('/')
 
 
-@app.route('volume_down')
+@app.route('/volume_down')
 def volume_down():
     print("Vol down")
+    mpd_client.decrease_volume(5)
     return redirect('/')
 
 
-@app.route('/switchTo/<id>')
-def switch_to_station(id):
-    print('Switch to ', id)
-    # mpd_do_action(mpd_client.playid, id)
+@app.route('/switchTo/<station_id>')
+def switch_to_station(station_id):
+    print('Switch to ', station_id)
+    mpd_client.play
     return redirect('/')
 
 
-@app.route('/delete/<id>')
-def delete_station(id):
-    print('Delete ', id)
+@app.route('/delete/<station_id>')
+def delete_station(station_id):
+    print('Delete ', station_id)
     # mpd_do_action(mpd_client.deleteid, id)
     return redirect('/')
 
 
-@app.route('/add_station/<address>')
-def add_station(address):
-    print(address)
+@app.route('/add_station', methods=['GET'])
+def add_station():
+    station_address = request.args.get('new_station_address')
+    print(station_address)
     return redirect('/')
 
 
