@@ -91,4 +91,3 @@ class OledDisplay:
 
 if __name__ == '__main__':
     oled = OledDisplay()
-    oled._display_metadata_thread()

@@ -53,13 +53,14 @@ class TftDisplay:
         self.display_thread.start()
 
     def display_thread_function(self):
-        self.event.wait()
-        song_metadata = self.metadata_source()
-        if song_metadata.get('album').get('cover_url') is None:
-            self.open_and_display_image(no_cover_image_path)
-        else:
-            self.download_and_display_image(song_metadata.get('album').get('cover_url'))
-        self.event.clear()
+        while True:
+            self.event.wait()
+            song_metadata = self.metadata_source()
+            if song_metadata.get('album').get('cover_url') is None:
+                self.open_and_display_image(no_cover_image_path)
+            else:
+                self.download_and_display_image(song_metadata.get('album').get('cover_url'))
+            self.event.clear()
 
     def download_and_display_image(self, url):
         image = self._download_image(url)
@@ -73,6 +74,7 @@ class TftDisplay:
     def _open_image(self, path):
         image = self.image_lookup.get(path)
         if image is None:
+            print('TFTDisplay: Accessing local image')
             image = Image.open(path)
             image.thumbnail((240, 240), Image.ANTIALIAS)
         self.image_lookup[path] = image

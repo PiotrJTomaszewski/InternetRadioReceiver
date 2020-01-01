@@ -20,7 +20,7 @@ mpd_client = MPDControlClient('localhost', 6600)
 
 @socketio.on('has_status_changed_request')
 def has_status_changed():
-    print('Client asking about status change')
+    # print('Client asking about status change')
     if new_status_event is not None:
         value_to_return = new_status_event.is_set()
         new_status_event.clear()

@@ -59,7 +59,7 @@ class Control:
         self.new_song_event.clear()
 
     def tft_metadata_source(self):
-        return self.shared_song_metadata
+        return self.shared_song_metadata.copy()
 
 
 if __name__ == "__main__":
