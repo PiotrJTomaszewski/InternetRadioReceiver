@@ -34,7 +34,7 @@ class ImageLookup(OrderedDict):
 
 class TftDisplay:
     # TODO: Add welcome image
-    def __init__(self, metadata_source, new_song_event, rst_pin=26, dc_pin=6, blk_pin=13):
+    def __init__(self, image_url_source, new_song_event, rst_pin=26, dc_pin=6, blk_pin=13):
         # Initialize TFT display
         # rst_pin, blk_pin, dc_pin - As GPIO number (int)
         spi = SPI.SpiDev(0, 0, max_speed_hz=40000000)
@@ -44,7 +44,7 @@ class TftDisplay:
         self.display.begin()
         self.display.clear()
         self.image_lookup = ImageLookup(20)
-        self.metadata_source = metadata_source
+        self.image_url_source = image_url_source
         self.event = new_song_event
         self.display_thread = threading.Thread(target=self.display_thread_function)
         print("TftDisplay: Display initialized")
@@ -55,15 +55,17 @@ class TftDisplay:
     def display_thread_function(self):
         while True:
             self.event.wait()
-            song_metadata = self.metadata_source()
-            if song_metadata.get('album').get('cover_url') is None:
+            self.event.clear()
+            print('TftDisplay: Displaying new image')
+            album_cover_url = self.image_url_source()
+            if album_cover_url is None:
                 self.open_and_display_image(no_cover_image_path)
             else:
-                self.download_and_display_image(song_metadata.get('album').get('cover_url'))
-            self.event.clear()
+                self.download_and_display_image(album_cover_url)
 
-    def download_and_display_image(self, url):
-        image = self._download_image(url)
+    def download_and_display_image(self, image_url):
+        image = self._download_image(image_url)
+        print('TFTDisplay: URL ' + image_url)
         # image = Image.Image.convert(image, Image.MODES.RGB)
         self._display_image(image)
 

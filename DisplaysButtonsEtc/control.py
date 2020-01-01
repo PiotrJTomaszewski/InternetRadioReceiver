@@ -41,7 +41,7 @@ class Control:
 
         # TFT display
         self.tft_display = TftDisplay(new_song_event=self.new_song_event,
-                                      metadata_source=self.tft_metadata_source)
+                                      image_url_source=self.tft_metadata_source)
         self.tft_display.start_display_thread()
 
         # OLED display
@@ -59,7 +59,7 @@ class Control:
         self.new_song_event.clear()
 
     def tft_metadata_source(self):
-        return self.shared_song_metadata.copy()
+        return self.shared_song_metadata.get('album').get('cover_url')
 
 
 if __name__ == "__main__":

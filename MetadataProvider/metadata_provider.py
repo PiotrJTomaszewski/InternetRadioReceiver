@@ -3,6 +3,7 @@ from processing_metadata import process_metadata, join_metadata
 from lastfm_api import LastFmMetadataGetter, LastFmApiException
 from multiprocessing.managers import SyncManager
 from multiprocessing import Event
+import time
 
 # Shared objects
 shared_song_metadata = {}
@@ -61,6 +62,7 @@ class MetadataProvider:
             track_metadata=track_metadata,
             album_metadata=album_metadata
         )
+        time.sleep(1)
         self.song_metadata.update(joined_metadata)
         self.control_panel_new_song_event.set()
         # if DEBUG_MODE:
