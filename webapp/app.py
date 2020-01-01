@@ -1,12 +1,15 @@
 from flask import Flask, render_template, redirect, request
 from multiprocessing.managers import SyncManager
 from mpd_control_client import MPDControlClient
+import time
+
+waiting_time = 0.5
 
 app = Flask(__name__)
 
 manager = SyncManager(address=('', 50000), authkey=b'abc')
 shared_song_metadata = {}
-shared_mpd_status = {}
+# shared_mpd_status = {}
 
 mpd_client = MPDControlClient('localhost', 6600)
 
@@ -25,14 +28,17 @@ def init():
 
 @app.route('/')
 def main():
-    playlist = mpd_client.get_playlist()
-    return render_template('index.html', metadata=shared_song_metadata, stations=playlist, mpd_status=shared_mpd_status)
+    stations = mpd_client.get_stations()
+    mpd_status = mpd_client.get_status()
+    print(mpd_status)
+    return render_template('index.html', metadata=shared_song_metadata, stations=stations, mpd_status=mpd_status)
 
 
 @app.route('/pause')
 def pause():
     print('Pause')
     mpd_client.pause()
+    time.sleep(waiting_time)
     return redirect('/')
 
 
@@ -40,20 +46,23 @@ def pause():
 def play():
     print('Play')
     mpd_client.play()
+    time.sleep(waiting_time)
     return redirect('/')
 
 
 @app.route('/prev')
 def prev_station():
     print('Prev')
-    mpd_client.prev()
+    mpd_client.prev_station()
+    time.sleep(waiting_time)
     return redirect('/')
 
 
 @app.route('/next')
 def next_station():
     print('Next')
-    mpd_client.next()
+    mpd_client.next_station()
+    time.sleep(waiting_time)
     return redirect('/')
 
 
@@ -61,6 +70,7 @@ def next_station():
 def volume_up():
     print("Vol up")
     mpd_client.increase_volume(5)
+    time.sleep(waiting_time)
     return redirect('/')
 
 
@@ -68,13 +78,15 @@ def volume_up():
 def volume_down():
     print("Vol down")
     mpd_client.decrease_volume(5)
+    time.sleep(waiting_time)
     return redirect('/')
 
 
 @app.route('/switchTo/<station_id>')
 def switch_to_station(station_id):
     print('Switch to ', station_id)
-    mpd_client.play
+    mpd_client.switch_to_station(station_id)
+    time.sleep(4*waiting_time)
     return redirect('/')
 
 
@@ -88,7 +100,7 @@ def delete_station(station_id):
 @app.route('/add_station', methods=['GET'])
 def add_station():
     station_address = request.args.get('new_station_address')
-    print(station_address)
+    time.sleep(waiting_time)
     return redirect('/')
 
 
@@ -98,4 +110,4 @@ def add_station():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")

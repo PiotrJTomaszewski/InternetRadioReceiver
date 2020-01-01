@@ -35,7 +35,6 @@ class MPDControlClient:
         self.stations_file_name = 'radio_stations'
 
     def __del__(self):
-        # TODO: Kill idling thread
         self.client.disconnect()
 
     def connect(self):
@@ -47,10 +46,11 @@ class MPDControlClient:
 
     @reconnect_on_failure
     def get_volume(self):
-        return self.client.get('volume')
+        return int(self.client.status()['volume'])
 
     @reconnect_on_failure
     def change_volume(self, value=5):
+        value = int(value)
         current_volume = self.get_volume()
         new_volume = current_volume + value
         if new_volume > 100:
@@ -74,11 +74,11 @@ class MPDControlClient:
         self.client.play(0)
 
     @reconnect_on_failure
-    def prev(self):
+    def prev_station(self):
         self.client.previous()
 
     @reconnect_on_failure
-    def next(self):
+    def next_station(self):
         self.client.next()
 
     @reconnect_on_failure
@@ -89,6 +89,11 @@ class MPDControlClient:
     def save_stations(self):
         self.client.save(self.stations_file_name)
 
+    @reconnect_on_failure
+    def get_status(self):
+        return self.client.status()
+
 
 if __name__ == '__main__':
-    pass
+    client = MPDControlClient('localhost', 6600)
+    print(client.get_stations())

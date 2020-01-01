@@ -13,7 +13,7 @@
     <div id="cover_container">
         <img src="{{ metadata.get('album').get('cover_url') }}" id="album_cover" alt="Album cover"/>
         <span id="paused_text">
-        {% if metadata.get('state') == 'paused' %}
+        {% if metadata.get('state') == 'pause' %}
             Paused
         {% endif %}
         </span>
