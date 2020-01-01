@@ -3,7 +3,7 @@ echo "Metadata provider starting"
 cd ./MetadataProvider
 python3 metadata_provider.py &
 cd ..
-sleep 5s
+sleep 15s
 
 echo "Front panel starting"
 cd ./DisplaysButtonsEtc
@@ -13,5 +13,5 @@ cd ..
 echo "Webapp starting"
 cd ./webapp
 export FLASK_APP=app
-flask run &
+flask run --host=0.0.0.0 &
 cd ..

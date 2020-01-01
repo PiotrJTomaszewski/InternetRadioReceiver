@@ -44,7 +44,8 @@ def init():
 
 @app.route('/')
 def main():
-    return render_template('index.html', metadata=shared_song_metadata, stations=shared_playlist, mpd_status=shared_mpd_status)
+    stations = mpd_client.get_stations()
+    return render_template('index.html', metadata=shared_song_metadata, stations=stations, mpd_status=shared_mpd_status)
 
 
 @socketio.on('pause')

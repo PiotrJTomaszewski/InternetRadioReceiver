@@ -48,6 +48,7 @@ class MPDConnection:
         self.current_song_metadata = {}
         self.last_song_title = ""
         self.current_playlist = {}
+        self.last_playlist_length = 0
 
     def __del__(self):
         # TODO: Kill idling thread
@@ -109,8 +110,11 @@ class MPDConnection:
         self.new_player_status_callback()
 
     def _handle_playlist_event(self):
-        self.update_playlist()
-        self.playlist_callback()
+        if self.last_playlist_length != len(self.get_playlist()):
+            print('MPD_CLIENT: Playlist has changed')
+            self.update_playlist()
+            self.playlist_callback()
+            self.last_playlist_length = len(self.get_playlist())
 
     def _start_idling_client(self):
         self.connect_idling_client()
@@ -121,6 +125,8 @@ class MPDConnection:
         self.new_player_status_callback()
         self.new_song_callback()
         self.last_song_title = self.current_song_metadata.get('title')
+        self.update_playlist()
+        self.last_playlist_length = len(self.get_playlist())
         while True:
             # Wait for a signal from server
             events = self.idle()

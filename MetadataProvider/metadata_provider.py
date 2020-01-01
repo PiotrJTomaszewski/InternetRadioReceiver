@@ -76,7 +76,7 @@ class MetadataProvider:
 
     def playlist_change_callback(self):
         playlist = self.mpd_connection.get_playlist()
-        self.current_playlist.update(playlist)
+        self.current_playlist = playlist.copy()
         self.webapp_new_status_event.set()
 
 

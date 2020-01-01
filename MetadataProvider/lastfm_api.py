@@ -7,7 +7,6 @@ from collections import OrderedDict
 DEBUG_MODE = True
 # Globals
 API_KEY_FILENAME = 'lastfm.key'
-API_KEY_FILENAME = '../webapp/lastfm.key'
 MAX_LOOKUP_SIZE = 50
 
 
