@@ -88,7 +88,7 @@ class MPDControlClient:
     @ignore_command_error
     @reconnect_on_failure
     def play(self):
-        self.client.play(0)
+        self.client.pause(0)
 
     @ignore_command_error
     @reconnect_on_failure
