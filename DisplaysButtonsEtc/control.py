@@ -1,14 +1,11 @@
 from multiprocessing.managers import SyncManager
 import time
+from os import system
 
 from oled_display import OledDisplay
 from mpd_control_client import MPDControlClient
 from buttons import ButtonReader
 from tft_display import TftDisplay
-
-
-def system_poweroff():
-    pass
 
 
 class Control:
@@ -34,7 +31,7 @@ class Control:
             'button4': self.mpd_client.next_station,
             'encoder_left': self.mpd_client.decrease_volume,
             'encoder_right': self.mpd_client.increase_volume,
-            'encoder_button': system_poweroff
+            'encoder_button': lambda: system("sudo systemctl poweroff")
         }
         self.buttons = ButtonReader(callbacks)
         self.buttons.start_reading_thread()
