@@ -58,7 +58,7 @@ class TftDisplay:
             self.event.clear()
             print('TftDisplay: Displaying new image')
             album_cover_url = self.image_url_source()
-            if album_cover_url is None:
+            if album_cover_url is None or album_cover_url == '':
                 self.open_and_display_image(no_cover_image_path)
             else:
                 self.download_and_display_image(album_cover_url)
