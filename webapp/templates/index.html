@@ -77,9 +77,15 @@
     </div>
 
     <div id="stations">
-        <button type="submit" name="add_new_station" onclick="addStation()">Add new station</button><br/>
+        <button type="submit" name="add_new_station" onclick="addStation()">Add new station</button>
+        <br/>
         <table id="stations_table" class="stations_table_border">
-            <thead>Your stations</thead>
+            <thead>
+            <tr>
+                <th>Your stations</th>
+            </tr>
+            </thead>
+            <tbody>
             {% for station in stations %}
                 <tr class="station_row stations_table_border">
                     <td class="station_element stations_table_border">
@@ -99,6 +105,7 @@
                     </td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
     </div>
 
