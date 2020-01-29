@@ -62,8 +62,8 @@ class MetadataProvider:
             track_metadata=track_metadata,
             album_metadata=album_metadata
         )
-        time.sleep(1)
         self.song_metadata.update(joined_metadata)
+        time.sleep(3)
         self.control_panel_new_song_event.set()
         # if DEBUG_MODE:
         # import pprint
@@ -85,4 +85,4 @@ class MetadataProvider:
 if __name__ == '__main__':
     prov = MetadataProvider()
     while 1:
-        pass
+        time.sleep(10000)

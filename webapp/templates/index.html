@@ -152,7 +152,7 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            {% if metadata.get('album').get('wiki') %}
+            {% if metadata.get('track').get('wiki') %}
                 <h4>Wiki snippet about the track:</h4>
                 {{ metadata.get('track').get('wiki')|safe }}
             {% endif %}
